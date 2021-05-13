@@ -3,7 +3,7 @@
 Create a face detection model from scratch on Grid. This project covers:
 
 1. creating a dataset from sratch
-2. creating a [Grid AI](https://grid.ai) datastore
+2. creating a [Grid AI](https://grid.ai) Datastore
 3. training a model on [Grid AI](https://grid.ai)
 4. using your trained model for inference
 
@@ -125,7 +125,15 @@ TPU available: False, using: 0 TPU cores
 Validation sanity check:   0%|                     | 0/2 [00:00<?, ?it/s]
 ```
 
-Feel free to run that locally to test that your model works as expected. Then train your model on Grid AI with:
+Feel free to run that locally to test that your model works as expected. 
+
+### Step 3.1: Train Your Model on Grid AI
+
+You are now ready to train your model on Grid. We'll be using the CLI but you can do the same thing by using the
+web UI. We have placed a configuration file locally (`.grid/config.yml`) that you can use as reference instead of
+passing all the parameters to the CLI manually -- or just click on Grid badge:
+
+
 
 ```shell
 $ grid run --grid_instance_type g4dn.xlarge \
