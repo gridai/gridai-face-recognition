@@ -4,6 +4,7 @@ from fdetection import FaceClassifier
 
 
 if __name__ == '__main__':
+
     # define CLI arguments
     parser = ArgumentParser()
     parser.add_argument('--seed', type=int, default=1234)
