@@ -133,7 +133,7 @@ You are now ready to train your model on Grid. We'll be using the CLI but you ca
 web UI. We have placed a configuration file locally (`.grid/config.yml`) that you can use as reference instead of
 passing all the parameters to the CLI manually -- or just click on Grid badge:
 
-
+[![Grid](https://img.shields.io/badge/rid_AI-run-78FF96.svg?labelColor=black&logo=data:image/svg%2bxml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMTR2MjBhMTQgMTQgMCAwMDE0IDE0aDlWMzYuOEgxMi42VjExaDIyLjV2N2gxMS4yVjE0QTE0IDE0IDAgMDAzMi40IDBIMTVBMTQgMTQgMCAwMDEgMTR6IiBmaWxsPSIjZmZmIi8+PHBhdGggZD0iTTM1LjIgNDhoMTEuMlYyNS41SDIzLjl2MTEuM2gxMS4zVjQ4eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==)](https://platform.grid.ai/#/runs?script=https://github.com/luiscape/gridai-face-recognition/blob/857fc2268a49a55b1f5c8412f3b43c616dd4a33f/train.py&cloud=grid&instance=g4dn.xlarge&accelerators=1&disk_size=200&framework=lightning&script_args=grid%20run%20--grid_instance_type%20g4dn.xlarge%20--grid_gpus%201%20--grid_datastore_name%20face_detection%20--grid_datastore_version%201%20--grid_use_spot%20--grid_datastore_mount_dir%20%2Fgridai%2Fproject%2Fdataset%20train.py%20--max_epochs%201000%20--data_path%20%2Fgridai%2Fproject%2Fdataset)
 
 ```shell
 $ grid run --grid_instance_type g4dn.xlarge \
@@ -164,3 +164,21 @@ Using default cloud credentials cc-bwhth to run on AWS.
                 datastore_version:       1
                 datastore_mount_dir:     /gridai/project/dataset
 ```
+
+## Bonus: Run a Hyperparameter Sweep
+
+Grid AI makes it trivial to run a [hyperparameter sweep](https://docs.grid.ai/products/global-cli-configs/cli-api/grid-train#hyperparameter-sweeps)
+without having to change anything in your scripts. The model we created provides support for a number of different backbones,
+including `resnet18` and `resnet200d`. Let's try both different models and learning rates to make sure we find the best model:
+
+```shell
+$ grid run --grid_instance_type g4dn.xlarge \
+           --grid_gpus 1 \
+           --grid_datastore_name face_detection \
+           --grid_datastore_version 1 \
+           --grid_datastore_mount_dir /gridai/project/dataset \
+           train.py --max_epochs 1000 --data_path /gridai/project/dataset \
+                    --learning_rate "uniform(0,0.0001,2)" --backbone "['resnet18','resnet200d']"
+```
+
+That will generate 4 experiments combining both different backbones and learning rate combinations.
