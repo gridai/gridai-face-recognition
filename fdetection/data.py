@@ -61,9 +61,9 @@ class DataProcessing:
         Navigate to the `./{self.processed_directory}` directory and sort images in their respective
         classes, i.e. one folder per person. For example:
 
-            dataset/vera/photo_1.jpg
-            dataset/vera/photo_2.jpg
-            dataset/luis/photo_1.jpg
+            {self.processed_directory}/vera/photo_1.jpg
+            {self.processed_directory}/vera/photo_2.jpg
+            {self.processed_directory}/luis/photo_1.jpg
             ...
         
         That way we'll be able to easily load the images and infer their respective
