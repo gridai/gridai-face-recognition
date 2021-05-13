@@ -47,6 +47,36 @@ class DataProcessing:
             output_path = os.path.basename(os.path.splitext(image)[0])
             self.mtcnn(img, save_path=f"output/{output_path}_output.jpg")
 
+        # print message for the next MANUAL step: image "annotation"
+        message = """
+        All raw files have been processes and face images have been extracted.
+        Now we have to separate images manually base on each person's face.
+
+        Navigate to the `./output/` directory and sort images in their respective
+        classes, i.e. one folder per person. For example:
+
+            dataset/vera/photo_1.jpg
+            dataset/vera/photo_2.jpg
+            dataset/luis/photo_1.jpg
+            ...
+        
+        That way we'll be able to easily load the images and infer their respective
+        classes on training.
+
+        Also, the MTCNN algorithm makes mistakes. Make sure to exclude all images that
+        do not contain faces from the results.
+        """
+        print(message)
+
+    # TODO
+    def split_data(self):
+        """
+        Creates different splits for training, validation, and test. This will identify all files
+        and their respective classes, then it'll separate randomly those files into respective
+        `train`, `val`, and `test` directories.
+        """
+        pass
+
     def process(self, path:str) -> torch.Tensor:
         """Processes single image file returning Tensor; useful for inference pipelines."""
         img = Image.open(path)
