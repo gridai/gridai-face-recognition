@@ -91,7 +91,7 @@ class FaceClassifier:
                 **data_kwargs
             )
 
-        # skip if in memory cache
+        # skip if memory cache available
         return self._data
 
     def train(self) -> None:
