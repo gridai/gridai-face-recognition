@@ -1,5 +1,4 @@
-import os
-
+from pathlib import Path
 from argparse import ArgumentParser
 from fdetection import FaceClassifier
 
@@ -9,7 +8,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--seed', type=int, default=1234)
     parser.add_argument('--backbone', type=str, default="resnet18")
-    parser.add_argument('--data_dir', type=str, default=os.getcwd())
+    parser.add_argument('--data_path', type=str, default=Path().cwd() / Path("dataset"))
     parser.add_argument('--max_epochs', type=int, default=1)
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--batch_size', type=int, default=32)
@@ -18,5 +17,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # start training
-    model = FaceClassifier(**args)
+    model = FaceClassifier(**vars(args))
     model.train()

@@ -2,6 +2,7 @@ import os
 import timm
 import torch
 
+from copy import deepcopy
 from pathlib import Path
 from flash.vision import ImageClassifier
 from flash import Trainer
@@ -23,9 +24,15 @@ class FaceClassifier:
         Convolutional Networks, Zhang et al., 2016. Available at: https://arxiv.org/pdf/1604.02878.pdf
     """
     def __init__(self, data_path:str, backbone: str = "resnet18", batch_size: int = 32, num_workers: int = 4,
-                 seed:int = 1234, learning_rate:float = 0.001, gpus:int = 0, inference: bool = False):
+                 seed:int = 1234, learning_rate:float = 0.001, gpus:int = 0, inference: bool = False, max_epochs: int = 1):
+        
+        self.data_path = data_path
+        self.backbone = backbone
+        self.batch_size = batch_size
+        self.num_workers = num_workers
         self.seed = seed
         self.learning_rate = learning_rate
+        self.max_epochs = max_epochs
 
         # if user passes `gpus` parameter use it; otherwise, use the
         # `_PL_TRAINER_GPUS` environment variable automatically populated by
@@ -58,7 +65,7 @@ class FaceClassifier:
         # create Flash classifier
         model = ImageClassifier(backbone=backbone,
                                 num_classes=self.data.num_classes,
-                                optimizer=torch.optm.Adam,
+                                optimizer=torch.optim.Adam,
                                 learning_rate=self.learning_rate)
 
         return model
@@ -75,7 +82,7 @@ class FaceClassifier:
             }
 
             # eliminate parameters that don't exist
-            for k, v in data_kwargs:
+            for k, v in deepcopy(data_kwargs).items():
                 if not v.exists():
                     del data_kwargs[k]
 
@@ -109,5 +116,6 @@ class FaceClassifier:
 
     def predict(self, path:str):
         image_tensor = self.data_processing(path=path)
+        print(image_tensor)
         # TODO: map prediction to class name
         # return model.forward(image_tensor)

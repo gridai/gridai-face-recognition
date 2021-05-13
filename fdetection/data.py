@@ -80,7 +80,7 @@ class DataProcessing:
         return (int(split[0] * N), int(split[1] * N), int(split[2] * N))
     
     @staticmethod
-    def _generates_idx_arrays(N:int, samples:Tuple[int, int, int]=(10, 10, 10)) -> List[List[int], List[int], List[int]]:
+    def _generates_idx_arrays(N:int, samples:Tuple[int, int, int]=(10, 10, 10)) -> List[List[int]]:
         """Generates random arrays of indices for creating different datasets with."""
         idx = list(range(N))
 

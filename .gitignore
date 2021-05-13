@@ -135,3 +135,6 @@ output/**
 
 # checkpoints
 checkpoints/**
+
+# training logs
+lightning_logs/**
