@@ -9,7 +9,14 @@ from typing import Optional
 
 
 class DataProcessing:
-    """Identifies faces in images"""
+    """
+    Identifies faces in images. Original MTCNN implementation and pipeline available
+    in the `facenet_pytorch` library. [1]
+    
+    References
+    ----------
+    [1] https://github.com/timesler/facenet-pytorch/blob/master/examples/infer.ipynb
+    """
     def __init__(self, raw_data_path: Optional[str] = None):
         
         # check that raw data path exits
