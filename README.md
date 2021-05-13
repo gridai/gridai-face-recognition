@@ -128,5 +128,32 @@ Validation sanity check:   0%|                     | 0/2 [00:00<?, ?it/s]
 Feel free to run that locally to test that your model works as expected. Then train your model on Grid AI with:
 
 ```shell
-$ grid run --grid_instance_type g4dn.xlarge --grid_gpus 1 train.py --max_epochs 1000
+$ grid run --grid_instance_type g4dn.xlarge \
+           --grid_gpus 1 \
+           --grid_datastore_name face_detection \
+           --grid_datastore_version 1 \
+           --grid_use_spot \
+           --grid_datastore_mount_dir /gridai/project/dataset \
+           train.py --max_epochs 1000 --data_path /gridai/project/dataset
+
+No --grid_name passed, naming your run glossy-manatee-255
+Using default cloud credentials cc-bwhth to run on AWS.
+
+                Run submitted!
+                `grid status` to list all runs
+                `grid status glossy-manatee-255` to see all experiments for this run
+
+                ----------------------
+                Submission summary
+                ----------------------
+                script:                  train.py
+                instance_type:           g4dn.xlarge
+                distributed:             False
+                use_spot:                True
+                cloud_provider:          aws
+                cloud_credentials:       cc-bwhth
+                grid_name:               glossy-manatee-255
+                datastore_name:          face_detection
+                datastore_version:       1
+                datastore_mount_dir:     /gridai/project/dataset
 ```
