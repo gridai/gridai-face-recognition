@@ -140,7 +140,6 @@ $ grid run --grid_instance_type g4dn.xlarge \
            --grid_gpus 1 \
            --grid_datastore_name face_detection \
            --grid_datastore_version 1 \
-           --grid_use_spot \
            --grid_datastore_mount_dir /gridai/project/dataset \
            train.py --max_epochs 1000 --data_path /gridai/project/dataset
 
