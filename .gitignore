@@ -138,3 +138,6 @@ checkpoints/**
 
 # training logs
 lightning_logs/**
+
+# grid artifacts
+grid_artifacts/**
