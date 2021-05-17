@@ -73,6 +73,14 @@ $ python create_training_dataset.py
 
 You will now find a new directory called `./dataset`. This directory contains the training dataset you need.
 
+This script also generates a file that maps label indices to class names. That file is called `dataset/labels.json` and has the following format:
+
+```json
+{"labels": ["label_a", "label_b"]}
+```
+
+We'll be using that file later when using the trained model for predictions.
+
 ## Step 2: Train Your Model
 
 [Grid AI](https://grid.ai) introduces the concept of [Datastores](https://docs.grid.ai/products/add-data-to-grid-datastores). Datastores are
@@ -165,7 +173,7 @@ Using default cloud credentials cc-bwhth to run on AWS.
                 datastore_mount_dir:     /gridai/project/dataset
 ```
 
-## Bonus: Run a Hyperparameter Sweep
+### Bonus: Run a Hyperparameter Sweep
 
 Grid AI makes it trivial to run a [hyperparameter sweep](https://docs.grid.ai/products/global-cli-configs/cli-api/grid-train#hyperparameter-sweeps)
 without having to change anything in your scripts. The model we created provides support for a number of different backbones,
@@ -182,3 +190,49 @@ $ grid run --grid_instance_type g4dn.xlarge \
 ```
 
 That will generate 4 experiments combining both different backbones and learning rate combinations.
+
+## Step 4: Predict
+
+This section covers how to get your weights from Grid and make predictions with your model.
+
+### Step 4.1: Get Your Weights
+
+Let's download your latest weights from Grid and run a series of predictions with your trained model.
+We'll first download all artifacts from your run with `grid artifacts`. In this case my Run was called
+`glossy-manatee-255`. When I run `grid artifacts glossy-manatee-255` it downloads all the artifacts for
+the Experiments from that Run.
+
+```shell
+$ grid artifacts glossy-manatee-255
+
+Downloading artifacts → ('glossy-manatee-255',)
+  glossy-manatee-255 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
+```
+
+Artifacts are saved by default in the `grid_artifacts` directory:
+
+```shell
+$ tree grid_artifacts
+grid_artifacts
+└── glossy-manatee-255
+    └── glossy-manatee-255-exp0
+        └── version_0
+            ├── checkpoints
+            │   └── epoch=712-step=7129.ckpt
+            ├── events.out.tfevents.1620938447.exp-glossy-manatee-255-exp0.20.0
+            └── hparams.yaml
+
+4 directories, 3 files
+```
+
+The file we are looking for is `epoch=712-step=7129.ckpt` which is the latest PyTorch checkpoint file.
+
+### Step 4.2: Load Your Weights And Make Predictions
+
+Now that we have our weights locally we want to load them using [Lightning Flash](https://github.com/PyTorchLightning/lightning-flash) and make predictions. You can run the script `predict.py` to test your new trained model:
+
+```shell
+$ python predict.py --checkpoint_path grid_artifacts/glossy-manatee-255/glossy-manatee-255-exp0/version_0/checkpoints/epoch=712-step=7129.ckpt \
+                    --image_path test_prediction_image.jpg
+Predicted class: person_a
+```

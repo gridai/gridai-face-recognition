@@ -1,15 +1,16 @@
 import os
+import json
 import timm
 import torch
 
 from copy import deepcopy
 from pathlib import Path
-from flash.vision import ImageClassifier
 from flash import Trainer
 import pytorch_lightning as pl
 
 from fdetection.data import DataProcessing
 from flash.vision import ImageClassificationData, ImageClassifier
+from typing import Optional
 
 
 class FaceClassifier:
@@ -23,10 +24,11 @@ class FaceClassifier:
     [1] Joint Face Detection and Alignment usinn Multi-task Cascaded
         Convolutional Networks, Zhang et al., 2016. Available at: https://arxiv.org/pdf/1604.02878.pdf
     """
-    def __init__(self, data_path:str, backbone: str = "resnet18", batch_size: int = 32, num_workers: int = 4,
-                 seed:int = 1234, learning_rate:float = 0.001, gpus:int = 0, inference: bool = False, max_epochs: int = 1):
+    def __init__(self, train_data_path:Optional[str] = None, backbone: str = "resnet18", batch_size: int = 32, num_workers: int = 4,
+                 seed:int = 1234, learning_rate:float = 0.001, gpus:int = 0, max_epochs: int = 1, inference: bool = False, 
+                 checkpoint_path: Optional[str] = None):
         
-        self.data_path = data_path
+        self.train_data_path = train_data_path
         self.backbone = backbone
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -48,7 +50,14 @@ class FaceClassifier:
         # if inference, instantiate data pipeline
         if inference:
             self.data_processing = DataProcessing()
-    
+
+        # load model to memory if we are requesting that
+        if checkpoint_path:
+            print(f"Loading checkpoint: {checkpoint_path}")
+            self.labels_path = "labels.json"
+            self._load_class_labels()
+            self.inference_model = ImageClassifier.load_from_checkpoint(checkpoint_path)
+
     @property
     def model(self) -> ImageClassifier:
         """
@@ -76,9 +85,9 @@ class FaceClassifier:
         if not hasattr(self, "_data"):
             # define folder location
             data_kwargs = {
-                "train_folder": Path(self.data_path) / Path('train'),
-                "valid_folder": Path(self.data_path) / Path('val'),
-                "test_folder": Path(self.data_path) / Path('test')
+                "train_folder": Path(self.train_data_path) / Path('train'),
+                "valid_folder": Path(self.train_data_path) / Path('val'),
+                "test_folder": Path(self.train_data_path) / Path('test')
             }
 
             # eliminate parameters that don't exist
@@ -89,7 +98,7 @@ class FaceClassifier:
             # raise error if no data was found
             if not data_kwargs:
                 raise ValueError(
-                    f"Could not find data in the following path: {self.data_path}. Are you sure training data is in the right location available?")
+                    f"Could not find data in the following path: {self.train_data_path}. Are you sure training data is in the right location available?")
 
             # create data module with whatever data is available
             self._data = ImageClassificationData.from_folders(
@@ -100,10 +109,17 @@ class FaceClassifier:
 
         # skip if memory cache available
         return self._data
+    
+    def _load_class_labels(self) -> None:
+        with open(self.labels_path) as f:
+            self.class_labels = json.load(f)["labels"]
+
+        print(f"Loaded {len(self.class_labels)} class labels: {self.class_labels}")
 
     def train(self) -> None:
         """Start training using Lightning as workhorse"""
 
+        # print usefult statistics
         print('train samples:', len(self.data.train_dataloader().dataset))
         print('valid samples:', len(self.data.val_dataloader().dataset))
 
@@ -115,7 +131,8 @@ class FaceClassifier:
         trainer.finetune(self.model, self.data, strategy='no_freeze')
 
     def predict(self, path:str):
-        image_tensor = self.data_processing(path=path)
-        print(image_tensor)
-        # TODO: map prediction to class name
-        # return model.forward(image_tensor)
+        """Make predictions from a single file."""
+        tensors = self.data_processing.process(path=path)
+        for tensor in tensors:
+            predictions = self.inference_model.predict([tensor])
+            print(f"Predicted class: {self.class_labels[predictions[0]]}")

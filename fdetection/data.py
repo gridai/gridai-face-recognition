@@ -1,4 +1,5 @@
 import os
+import json
 import torch
 import shutil
 import numpy as np
@@ -7,7 +8,7 @@ from tqdm import tqdm
 from pathlib import Path
 from PIL import Image
 from facenet_pytorch import MTCNN
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Set
 
 
 
@@ -36,6 +37,7 @@ class DataProcessing:
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         # default optiosn lifted from https://github.com/timesler/facenet-pytorch/blob/master/examples/infer.ipynb
+        # changing these options may affect the performance of how MTCNN works
         self.mtcnn = MTCNN(
             image_size=160, margin=0, min_face_size=20,
             thresholds=[0.6, 0.7, 0.7], factor=0.709, post_process=True,
@@ -61,9 +63,9 @@ class DataProcessing:
         Navigate to the `./{self.processed_directory}` directory and sort images in their respective
         classes, i.e. one folder per person. For example:
 
-            {self.processed_directory}/vera/photo_1.jpg
-            {self.processed_directory}/vera/photo_2.jpg
-            {self.processed_directory}/luis/photo_1.jpg
+            {self.processed_directory}/person_a/photo_1.jpg
+            {self.processed_directory}/person_a/photo_2.jpg
+            {self.processed_directory}/person_b/photo_1.jpg
             ...
         
         That way we'll be able to easily load the images and infer their respective
@@ -109,6 +111,12 @@ class DataProcessing:
             
             # create directory
             dir.mkdir(parents=True, exist_ok=True)
+        
+    @staticmethod
+    def _write_labels_file(classes:Set[str]) -> None:
+        data = {"labels": list(classes)}
+        with open("dataset/labels.json", "w") as f:
+            json.dump(data, f)
 
     def create_training_dataset(self) -> None:
         """
@@ -128,13 +136,17 @@ class DataProcessing:
         self._create_base_directories()
 
         # copies files into directories
+        unique_classes = set()
         directories = [Path("dataset/train"), Path("dataset/test"), Path("dataset/val")]
         for dataset_idx, dir in zip((train, test, val), directories):
             for i in dataset_idx:
+                unique_classes.add(all_files[i].parent.name)
                 parent_dir = dir / all_files[i].parent.name
                 parent_dir.mkdir(parents=True, exist_ok = True)
                 shutil.copy(all_files[i], parent_dir / Path(all_files[i].name))
 
+        # write labels file
+        
         print("Dataset created successfully")
 
     def process(self, path:str) -> torch.Tensor:
